@@ -30,7 +30,7 @@ func main() {
 
 func dbConnection() {
 	// load env variables
-	err := godotenv.Load()
+	err := godotenv.Load("../.env.local")
 	if err != nil {
 		fmt.Println("Error loading .env file")
 	}
@@ -58,5 +58,5 @@ func dbConnection() {
 		log.Fatal(pingErr)
 	}
 
-	fmt.Println("Connected!")
+	fmt.Println("successfully connected to db!")
 }
