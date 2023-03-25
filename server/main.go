@@ -27,14 +27,7 @@ func main() {
 	app := gin.Default()
 	port := "localhost:4000"
 
-	app.GET("/", func(ctx *gin.Context) {
-		tasks, err := getAllTasks()
-
-		if err != nil {
-			log.Fatal(err)
-		}
-		ctx.IndentedJSON(http.StatusOK, tasks)
-	})
+	app.GET("/", getAllTasks)
 
 	app.Run(port)
 
@@ -73,11 +66,12 @@ func dbConnection() {
 	fmt.Println("successfully connected to db!")
 }
 
-func getAllTasks() ([]Task, error) {
+func getAllTasks(c *gin.Context) {
 	rows, err := db.Query(("SELECT id, task_name, completed, owner_name FROM tasks JOIN owners ON tasks.owner_id = owners.owner_id"))
 
 	if err != nil {
-		return nil, err
+		log.Fatalf("error: %v", err)
+
 	}
 	defer rows.Close()
 
@@ -85,18 +79,20 @@ func getAllTasks() ([]Task, error) {
 
 	for rows.Next() {
 		var task Task
+
 		if err := rows.Scan(&task.TaskID, &task.TaskName, &task.Completed, &task.OwnerName); err != nil {
-			return allTasks, err
+			log.Fatalf("error: %v", err)
 		}
 
 		allTasks = append(allTasks, task)
 	}
 
 	if err = rows.Err(); err != nil {
-		return allTasks, err
+		c.JSON(http.StatusBadRequest, err)
+
 	}
 
-	return allTasks, nil
+	c.JSON(http.StatusOK, allTasks)
 }
 
 func addTask(newTask Task) (int64, error) {
