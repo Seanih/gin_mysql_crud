@@ -28,6 +28,7 @@ func main() {
 	port := "localhost:4000"
 
 	app.GET("/", getAllTasks)
+	app.POST("/", addTask)
 
 	app.Run(port)
 
@@ -95,17 +96,37 @@ func getAllTasks(c *gin.Context) {
 	c.JSON(http.StatusOK, allTasks)
 }
 
-func addTask(newTask Task) (int64, error) {
-	result, err := db.Exec("INSERT INTO owners (owner_name) VALUES (?)", newTask.OwnerName)
+func addTask(c *gin.Context) {
+	var newTask Task
 
+	if err := c.BindJSON(&newTask); err != nil {
+		log.Fatalf("error adding task: %v", err)
+	}
+	
+	// must first add owner to owner table
+	result1, err := db.Exec("INSERT INTO owners (owner_name) VALUES (?)", newTask.OwnerName)
 	if err != nil {
-		return 0, fmt.Errorf("there was an error: %v", err)
+		c.JSON(http.StatusBadRequest, err)
 	}
 
-	id, err := result.LastInsertId()
+	ownerID, err := result1.LastInsertId()
 	if err != nil {
-		return 0, fmt.Errorf("there was an error: %v", err)
+		c.JSON(http.StatusBadRequest, err)
 	}
 
-	return id, nil
+	// add ownerID as param for insert query
+	result2, err := db.Exec("INSERT INTO tasks (task_name, completed, owner_id) VALUES (?, ?, ?)", newTask.TaskName, newTask.Completed, ownerID)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err)
+	}
+
+	newTaskID, err := result2.LastInsertId()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err)
+	}
+
+	response := fmt.Sprintf("task created with id: %v", newTaskID)
+
+	c.JSON(http.StatusCreated, response)
 }
