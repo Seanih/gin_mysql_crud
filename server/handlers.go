@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -19,8 +18,7 @@ func getAllTasks(c *gin.Context) {
 	rows, err := db.Query(("SELECT id, task_name, completed, owner_name FROM tasks JOIN owners ON tasks.owner_id = owners.owner_id"))
 
 	if err != nil {
-		log.Fatalf("error: %v", err)
-
+		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 	}
 	defer rows.Close()
 
@@ -30,7 +28,7 @@ func getAllTasks(c *gin.Context) {
 		var task Task
 
 		if err := rows.Scan(&task.TaskID, &task.TaskName, &task.Completed, &task.OwnerName); err != nil {
-			log.Fatalf("error: %v", err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": err})
 		}
 
 		allTasks = append(allTasks, task)
@@ -48,11 +46,12 @@ func addTask(c *gin.Context) {
 	var newTask Task
 
 	if err := c.BindJSON(&newTask); err != nil {
-		log.Fatalf("error adding task: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 	}
 
 	// must first add owner to owner table
 	result1, err := db.Exec("INSERT INTO owners (owner_name) VALUES (?)", newTask.OwnerName)
+
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err)
 	}
@@ -77,4 +76,23 @@ func addTask(c *gin.Context) {
 	response := fmt.Sprintf("task created with id: %v", newTaskID)
 
 	c.JSON(http.StatusCreated, response)
+}
+
+func deleteTask(c *gin.Context) {
+	var deletedTask Task
+	if err := c.BindJSON(&deletedTask); err != nil {
+		c.JSON(http.StatusBadRequest, err)
+	}
+
+	_, err := db.Exec("DELETE FROM tasks WHERE id = ?", deletedTask.TaskID)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": err})
+	}
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": err})
+	}
+
+	c.JSON(http.StatusNoContent, nil)
 }
