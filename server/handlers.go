@@ -90,9 +90,21 @@ func deleteTask(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": err})
 	}
 
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"Error": err})
+	c.JSON(http.StatusNoContent, nil)
+}
+
+func editTask(c *gin.Context) {
+	var editedTask Task
+
+	if err := c.BindJSON(&editedTask); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 	}
 
-	c.JSON(http.StatusNoContent, nil)
+	_, err := db.Exec("UPDATE tasks SET task_name = ?, completed = ? WHERE id = ?", editedTask.TaskName, editedTask.Completed, editedTask.TaskID)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err})
+	}
+
+	c.JSON(http.StatusAccepted, "task was updated")
 }

@@ -21,6 +21,7 @@ func main() {
 
 	app.GET("/", getAllTasks)
 	app.POST("/", addTask)
+	app.PATCH("/", editTask)
 	app.DELETE("/", deleteTask)
 
 	app.Run(port)
