@@ -25,7 +25,6 @@ func main() {
 	app.DELETE("/", deleteTask)
 
 	app.Run(port)
-
 }
 
 func dbConnection() {

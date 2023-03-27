@@ -22,11 +22,11 @@ func getAllTasks(c *gin.Context) {
 	}
 	defer rows.Close()
 
+	// make slice to store queried data
 	var allTasks []Task
 
 	for rows.Next() {
 		var task Task
-
 		if err := rows.Scan(&task.TaskID, &task.TaskName, &task.Completed, &task.OwnerName); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err})
 		}
@@ -44,7 +44,6 @@ func getAllTasks(c *gin.Context) {
 
 func addTask(c *gin.Context) {
 	var newTask Task
-
 	if err := c.BindJSON(&newTask); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 	}
@@ -95,7 +94,6 @@ func deleteTask(c *gin.Context) {
 
 func editTask(c *gin.Context) {
 	var editedTask Task
-
 	if err := c.BindJSON(&editedTask); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 	}
