@@ -1,8 +1,11 @@
 import type { NextPage } from 'next';
 import Head from 'next/head';
+import axios from 'axios';
 
 const Home: NextPage = () => {
-	
+	const handleSubmit = async () => {
+		// submit task data to DB
+	};
 
 	return (
 		<div>
@@ -28,10 +31,12 @@ const Home: NextPage = () => {
 						<input className='px-2 py-1' type='text' name='task' />
 					</div>
 					<div className='pt-2'>
-						<label htmlFor='status'></label>
+						<label className='mr-4' htmlFor='status'>
+							Status:
+						</label>
 						<select name='status' onChange={e => console.log(e.target.value)}>
-							<option value='false'>false</option>
-							<option value='true'>true</option>
+							<option value='false'>incomplete</option>
+							<option value='true'>completed</option>
 						</select>
 					</div>
 				</form>

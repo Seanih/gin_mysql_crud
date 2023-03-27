@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
@@ -18,6 +20,22 @@ func main() {
 
 	app := gin.Default()
 	port := "localhost:4000"
+
+	// CORS for http://localhost:3000 and http://localhost:4000 origins, allowing:
+	// -  methods
+	// - Origin header
+	// - Credentials share
+	// - Preflight requests cached for 12 hours
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowHeaders:     []string{"Origin"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		AllowOriginFunc: func(origin string) bool {
+			return origin == "http://localhost:4000"
+		},
+		MaxAge: 12 * time.Hour,
+	}))
 
 	app.GET("/", getAllTasks)
 	app.POST("/", addTask)

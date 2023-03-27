@@ -48,6 +48,11 @@ func addTask(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 	}
 
+	if newTask.OwnerName == "" || newTask.TaskName == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "cannot leave 'Task' or 'Owner' fields blank"})
+		return
+	}
+
 	// must first add owner to owner table
 	result1, err := db.Exec("INSERT INTO owners (owner_name) VALUES (?)", newTask.OwnerName)
 
